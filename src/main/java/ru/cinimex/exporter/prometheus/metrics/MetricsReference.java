@@ -132,6 +132,7 @@ public class MetricsReference {
         queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_max_depth_messages", "The maximum number of messages that are allowed on the queue"));
         queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_get_inhibited_untyped", "0 if get is allowed and 1 otherwise"));
         queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_put_inhibited_untyped", "0 if put is allowed and 1 otherwise"));
+        queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_depth_current", "The current number of messages on the queue"));
         metrics.put(MQObject.MQType.QUEUE, queueMetrics);
         metrics.put(MQObject.MQType.CHANNEL, Collections.singletonList(new AdditionalMetric("mqobject_channel_channel_status_untyped", "The status of the channel")));
         metrics.put(MQObject.MQType.LISTENER, Collections.singletonList(new AdditionalMetric("mqobject_listener_listener_status_untyped", "The status of the listener")));

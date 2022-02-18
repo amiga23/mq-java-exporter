@@ -1,7 +1,7 @@
 package ru.cinimex.exporter.mq;
 
-import static com.ibm.mq.constants.CMQC.MQIA_INHIBIT_GET;
-import static com.ibm.mq.constants.CMQC.MQIA_INHIBIT_PUT;
+import static com.ibm.mq.constants.CMQC.MQIA_INHIBIT_GET; // remove???
+import static com.ibm.mq.constants.CMQC.MQIA_INHIBIT_PUT; // remove???
 import static com.ibm.mq.constants.MQConstants.MQCACH_CHANNEL_NAME;
 import static com.ibm.mq.constants.MQConstants.MQCACH_LISTENER_NAME;
 import static com.ibm.mq.constants.MQConstants.MQCA_Q_NAME;
@@ -11,8 +11,20 @@ import static com.ibm.mq.constants.MQConstants.MQCMD_INQUIRE_Q;
 import static com.ibm.mq.constants.MQConstants.MQIACH_CHANNEL_STATUS;
 import static com.ibm.mq.constants.MQConstants.MQIACH_LISTENER_STATUS;
 import static com.ibm.mq.constants.MQConstants.MQIA_MAX_Q_DEPTH;
+import static com.ibm.mq.constants.MQConstants.MQIA_CURRENT_Q_DEPTH;
+import static com.ibm.mq.constants.MQConstants.MQIA_INHIBIT_GET;
+import static com.ibm.mq.constants.MQConstants.MQIA_INHIBIT_PUT;
 import static com.ibm.mq.constants.MQConstants.MQIA_Q_TYPE;
+import static com.ibm.mq.constants.MQConstants.MQIACF_OLDEST_MSG_AGE;
 import static com.ibm.mq.constants.MQConstants.MQQT_LOCAL;
+import static com.ibm.mq.constants.MQConstants.MQIA_OPEN_INPUT_COUNT; // Consumer - POV application
+import static com.ibm.mq.constants.MQConstants.MQIA_OPEN_OUTPUT_COUNT; // Producer
+import static com.ibm.mq.constants.MQConstants.MQIA_MSG_ENQ_COUNT;
+import static com.ibm.mq.constants.MQConstants.MQIA_MSG_DEQ_COUNT;
+import static com.ibm.mq.constants.MQConstants.MQCACF_LAST_PUT_TIME;
+import static com.ibm.mq.constants.MQConstants.MQCACF_LAST_GET_TIME;
+import static com.ibm.mq.constants.MQConstants.MQCACF_LAST_PUT_DATE;
+import static com.ibm.mq.constants.MQConstants.MQCACF_LAST_GET_DATE;
 
 import com.ibm.mq.headers.pcf.PCFMessage;
 import java.util.ArrayList;
@@ -55,6 +67,7 @@ public class MQObject {
                 pcfHeadersToMetricMappings.add(new Pair<>(MQIA_MAX_Q_DEPTH, "mqobject_queue_queue_max_depth_messages"));
                 pcfHeadersToMetricMappings.add(new Pair<>(MQIA_INHIBIT_PUT, "mqobject_queue_queue_put_inhibited_untyped"));
                 pcfHeadersToMetricMappings.add(new Pair<>(MQIA_INHIBIT_GET, "mqobject_queue_queue_get_inhibited_untyped"));
+                pcfHeadersToMetricMappings.add(new Pair<>(MQIA_CURRENT_Q_DEPTH, "mqobject_queue_queue_depth_current"));
                 break;
             case LISTENER:
                 pcfCmd = new PCFMessage(

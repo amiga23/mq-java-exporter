@@ -132,8 +132,19 @@ public class MetricsReference {
         queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_max_depth_messages", "The maximum number of messages that are allowed on the queue"));
         queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_get_inhibited_untyped", "0 if get is allowed and 1 otherwise"));
         queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_put_inhibited_untyped", "0 if put is allowed and 1 otherwise"));
-        queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_depth_current", "The current number of messages on the queue"));
+        queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_open_input_count", "Current open handles for reading messages from the queue by means of the MQGET call"));
+        queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_open_output_count", "Current open handles for adding messages to the queue by means of the MQPUT call"));
+        queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_enqueed_messages", "The number of messages that were put on the queue since the queue statistics were last reset"));
+        queueMetrics.add(new AdditionalMetric("mqobject_queue_queue_dequeed_messages", "The number of messages that were removed from the queue since the queue statistics were last reset"));
+
+        List<AdditionalMetric> queueStatusMetrics = new ArrayList<>(3);
+        queueStatusMetrics.add(new AdditionalMetric("mqobject_queue_queue_oldest_message_age", "Age of oldest on queue"));
+        queueStatusMetrics.add(new AdditionalMetric("mqobject_queue_queue_last_put_time", "The time when the last message was put to the queue"));
+        queueStatusMetrics.add(new AdditionalMetric("mqobject_queue_queue_last_get_time", "The time when the last message was read from the queue"));
+        queueStatusMetrics.add(new AdditionalMetric("mqobject_queue_queue_last_put_date", "The date when the last message was put to the queue"));
+        queueStatusMetrics.add(new AdditionalMetric("mqobject_queue_queue_last_get_date", "The date when the last message was read from the queue"));
         metrics.put(MQObject.MQType.QUEUE, queueMetrics);
+        metrics.put(MQObject.MQType.QUEUE_STATUS, queueStatusMetrics);
         metrics.put(MQObject.MQType.CHANNEL, Collections.singletonList(new AdditionalMetric("mqobject_channel_channel_status_untyped", "The status of the channel")));
         metrics.put(MQObject.MQType.LISTENER, Collections.singletonList(new AdditionalMetric("mqobject_listener_listener_status_untyped", "The status of the listener")));
         return metrics;
@@ -294,6 +305,7 @@ public class MetricsReference {
         double returnValue = -1;
         switch (type) {
             case QUEUE:
+            case QUEUE_STATUS:
                 returnValue = value;
                 break;
             case CHANNEL:

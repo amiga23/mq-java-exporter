@@ -135,7 +135,7 @@ public class MQObjectUpdater implements Runnable {
    * @param element - PCFElement, received from MQ.
    */
   private void addTopicSubscriber(MQObject object, PCFElement element) {
-    if (object.getType().equals(MQObject.MQType.QUEUE)) {
+    if (object.getType().equals(MQObject.MQType.QUEUE) || object.getType().equals(MQObject.MQType.QUEUE_STATUS)) {
       PCFElement objElement = new PCFElement(element.getTopicString(), element.getRows());
       objElement.formatTopicString(object.getName());
       mqTopicSubscribers.put(objElement.getTopicString(), new MQTopicSubscriber(objElement, config.getQmgrName(), object.getName()));
@@ -166,6 +166,7 @@ public class MQObjectUpdater implements Runnable {
     for (MQObject.MQType type : MQObject.MQType.values()) {
       switch (type) {
         case QUEUE:
+        case QUEUE_STATUS:
           objects
               .addAll(inquireMQObjectsByPatterns(config.getQueues().get("include"), type, MQCACF_Q_NAMES));
           inquireMQObjectsByPatterns(config.getQueues().get("exclude"), type, MQCACF_Q_NAMES).forEach(

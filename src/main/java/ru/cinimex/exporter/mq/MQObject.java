@@ -1,13 +1,12 @@
 package ru.cinimex.exporter.mq;
 
-import static com.ibm.mq.constants.CMQC.MQIA_INHIBIT_GET; // remove???
-import static com.ibm.mq.constants.CMQC.MQIA_INHIBIT_PUT; // remove???
 import static com.ibm.mq.constants.MQConstants.MQCACH_CHANNEL_NAME;
 import static com.ibm.mq.constants.MQConstants.MQCACH_LISTENER_NAME;
 import static com.ibm.mq.constants.MQConstants.MQCA_Q_NAME;
 import static com.ibm.mq.constants.MQConstants.MQCMD_INQUIRE_CHANNEL_STATUS;
 import static com.ibm.mq.constants.MQConstants.MQCMD_INQUIRE_LISTENER_STATUS;
 import static com.ibm.mq.constants.MQConstants.MQCMD_INQUIRE_Q;
+import static com.ibm.mq.constants.MQConstants.MQCMD_INQUIRE_Q_STATUS;
 import static com.ibm.mq.constants.MQConstants.MQIACH_CHANNEL_STATUS;
 import static com.ibm.mq.constants.MQConstants.MQIACH_LISTENER_STATUS;
 import static com.ibm.mq.constants.MQConstants.MQIA_MAX_Q_DEPTH;
@@ -67,7 +66,24 @@ public class MQObject {
                 pcfHeadersToMetricMappings.add(new Pair<>(MQIA_MAX_Q_DEPTH, "mqobject_queue_queue_max_depth_messages"));
                 pcfHeadersToMetricMappings.add(new Pair<>(MQIA_INHIBIT_PUT, "mqobject_queue_queue_put_inhibited_untyped"));
                 pcfHeadersToMetricMappings.add(new Pair<>(MQIA_INHIBIT_GET, "mqobject_queue_queue_get_inhibited_untyped"));
-                pcfHeadersToMetricMappings.add(new Pair<>(MQIA_CURRENT_Q_DEPTH, "mqobject_queue_queue_depth_current"));
+                // @TODO already in as mqobject_queue_queue_depth_messages but defined somewhere else!
+                // pcfHeadersToMetricMappings.add(new Pair<>(MQIA_CURRENT_Q_DEPTH, "mqobject_queue_queue_current_depth_messages"));
+
+                pcfHeadersToMetricMappings.add(new Pair<>(MQIA_OPEN_INPUT_COUNT, "mqobject_queue_queue_open_input_count"));
+                pcfHeadersToMetricMappings.add(new Pair<>(MQIA_OPEN_OUTPUT_COUNT, "mqobject_queue_queue_open_output_count"));
+//                pcfHeadersToMetricMappings.add(new Pair<>(MQIA_MSG_ENQ_COUNT, "mqobject_queue_queue_enqueed_messages"));
+//                pcfHeadersToMetricMappings.add(new Pair<>(MQIA_MSG_DEQ_COUNT, "mqobject_queue_queue_dequeed_messages"));
+                break;
+            case QUEUE_STATUS:
+                pcfCmd = new PCFMessage(MQCMD_INQUIRE_Q_STATUS); //if object type is queue, exporter would inquire it.
+                pcfCmd.addParameter(MQCA_Q_NAME,
+                    name); //PCF command would try to retrieve statistics about queue with specific name
+                pcfCmd.addParameter(MQIA_Q_TYPE, MQQT_LOCAL); // and specific type
+                pcfHeadersToMetricMappings.add(new Pair<>(MQIACF_OLDEST_MSG_AGE, "mqobject_queue_queue_oldest_message_age"));
+                pcfHeadersToMetricMappings.add(new Pair<>(MQCACF_LAST_PUT_TIME, "mqobject_queue_queue_last_put_time"));
+                pcfHeadersToMetricMappings.add(new Pair<>(MQCACF_LAST_GET_TIME, "mqobject_queue_queue_last_get_time"));
+                pcfHeadersToMetricMappings.add(new Pair<>(MQCACF_LAST_PUT_DATE, "mqobject_queue_queue_last_put_date"));
+                pcfHeadersToMetricMappings.add(new Pair<>(MQCACF_LAST_GET_DATE, "mqobject_queue_queue_last_get_date"));
                 break;
             case LISTENER:
                 pcfCmd = new PCFMessage(
@@ -102,6 +118,7 @@ public class MQObject {
         int code = -1;
         switch (type) {
             case QUEUE:
+            case QUEUE_STATUS:
                 code = MQCA_Q_NAME;
                 break;
             case CHANNEL:
@@ -172,5 +189,5 @@ public class MQObject {
     /**
      * This enum represents all supported MQObject types.
      */
-    public enum MQType {QUEUE, CHANNEL, LISTENER}
+    public enum MQType {QUEUE, QUEUE_STATUS, CHANNEL, LISTENER}
 }

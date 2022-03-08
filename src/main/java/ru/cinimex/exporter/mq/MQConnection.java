@@ -30,7 +30,7 @@ import java.util.Map;
 public class MQConnection {
     private static final Logger logger = LogManager.getLogger(MQConnection.class);
     private static MQQueueManager topicQueueManager;
-    private static MQQueueManager[] queueManagers = new MQQueueManager[4];
+    private static MQQueueManager[] queueManagers = new MQQueueManager[MQObject.MQType.values().length+1];
     private static MQQueue dynamicQueue;
     private static AtomicInteger connectionIndex = new AtomicInteger(0);
 

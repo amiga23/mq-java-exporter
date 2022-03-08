@@ -9,10 +9,14 @@ import com.ibm.mq.headers.pcf.PCFException;
 import com.ibm.mq.headers.pcf.PCFMessage;
 import com.ibm.mq.headers.pcf.PCFMessageAgent;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
@@ -59,11 +63,51 @@ public abstract class PCFSubscriber extends Thread {
      */
     protected void updateMetrics(PCFMessage response, String objectName) {
         for (Pair<Integer, String> mapping : object.getPcfHeadersToMetricMappings()) {
-            Object result = response.getParameterValue(mapping.getFirst());
-            double prometheusValue = MetricsReference.getMetricValue(object.getType(), (Integer) result);
-            MetricsManager
-                .updateMetric(mapping.getSecond(), prometheusValue, queueManagerName,
-                    objectName);
+            try {
+                Object result = response.getParameterValue(mapping.getFirst());
+                // @TODO Make this more smart. Maybe there also other strings?
+                double prometheusValue;
+                if (result instanceof String) {
+                    if (((String)result).length()==10) {
+                        final DateFormat dateFormat = new SimpleDateFormat(
+                            "yyyy-MM-dd");
+                        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC")); // This needs to be parsed as UTC because this is the date only, hours will be 0:00:00
+                        logger.debug("Before: " + (String)result);
+                        Date d = dateFormat.parse((String)result);
+                        long time = d.getTime();
+                        logger.debug("long: " + time);
+                        Double timed = Double.valueOf(time);
+                        logger.debug("double: " + timed);
+                        prometheusValue = timed;
+                    } else if (((String)result).length()==8) {
+                        final DateFormat dateFormat = new SimpleDateFormat(
+                        "HH.mm.ss");
+                        // Do not set timezone here, as this should be the system timezone (hopefully)
+                        logger.debug("Before: " + (String)result);
+                        Date d = dateFormat.parse((String)result);
+                        Long time = d.getTime();
+                        logger.debug("long: " + time);
+                        Double timed = Double.valueOf(time);
+                        logger.debug("double: " + timed);
+                        prometheusValue = timed;
+                    } else {
+                        return;
+                    }
+                } else {
+                    try {
+                        prometheusValue = MetricsReference.getMetricValue(object.getType(), (Integer) result);
+                    } catch (Exception e) {
+                        logger.error("ERROR4");
+                        logger.error("TYPE: "+object.getType() + " Name: " + object.getName() + " CMD: " + object.getPcfCmd() + " has no value!!!");
+                        throw e;
+                    }
+                }
+                MetricsManager
+                    .updateMetric(mapping.getSecond(), prometheusValue, queueManagerName,
+                        objectName);
+            } catch (Exception e ) {
+                logger.error("ERROR3", e);
+            }
         }
     }
 
@@ -73,32 +117,36 @@ public abstract class PCFSubscriber extends Thread {
      * @param pcfResponse - PCFMessage object which contains response from queue manager about all MQ objects of specific type.
      */
     protected void updateMetricsWithWildcards(PCFMessage[] pcfResponse) {
-        List<String> monitoredObjectNames = new ArrayList<>();
-        Map<String, PCFMessage> retrievedMetrics = new HashMap<>();
+    	try {
+            List<String> monitoredObjectNames = new ArrayList<>();
+            Map<String, PCFMessage> retrievedMetrics = new HashMap<>();
 
-        //copy all objects names to temporary array
-        for (MQObject monitoredObject : objects) {
-            monitoredObjectNames.add(monitoredObject.getName());
-        }
-
-        //put all retrieved objects names to temporary array
-        for (PCFMessage response : pcfResponse) {
-            String objectName = (String) response.getParameterValue(MQObject.objectNameCode(object.getType()));
-            retrievedMetrics.put(objectName.trim(), response);
-        }
-
-        retrievedMetrics.forEach((objectName, pcfMessage) -> {
-            //if temporary array contains metric, then remove it from temporary array and update metric
-            if (monitoredObjectNames.contains(objectName)) {
-                monitoredObjectNames.remove(objectName);
-                updateMetrics(pcfMessage, objectName);
+            //copy all objects names to temporary array
+            for (MQObject monitoredObject : objects) {
+                monitoredObjectNames.add(monitoredObject.getName());
             }
-        });
 
-        //Are there any objects left in temporary array? It means that "*" wildcard didn't return all values.
-        //There are multiple reasons why it could happen. For example, MQ channel has status "inactive".
-        //Then we send direct PCF command for specific object. If some error occurs, we have custom processing for it.
-        updateWithDirectPCFCommand(monitoredObjectNames);
+            //put all retrieved objects names to temporary array
+            for (PCFMessage response : pcfResponse) {
+                String objectName = (String) response.getParameterValue(MQObject.objectNameCode(object.getType()));
+                retrievedMetrics.put(objectName.trim(), response);
+            }
+
+            retrievedMetrics.forEach((objectName, pcfMessage) -> {
+                //if temporary array contains metric, then remove it from temporary array and update metric
+                if (monitoredObjectNames.contains(objectName)) {
+                    monitoredObjectNames.remove(objectName);
+                    updateMetrics(pcfMessage, objectName);
+                }
+            });
+
+            //Are there any objects left in temporary array? It means that "*" wildcard didn't return all values.
+            //There are multiple reasons why it could happen. For example, MQ channel has status "inactive".
+            //Then we send direct PCF command for specific object. If some error occurs, we have custom processing for it.
+            updateWithDirectPCFCommand(monitoredObjectNames);
+    	} catch ( Exception e ) {
+    	    logger.error("ERROR", e);
+    	}
     }
 
     /**

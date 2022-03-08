@@ -22,6 +22,7 @@ public class PCFCommand {
     PCFMessage command;
     switch (type) {
       case QUEUE:
+      case QUEUE_STATUS:
         command = new PCFMessage(MQCMD_INQUIRE_Q_NAMES);
         command.addParameter(MQCA_Q_NAME, name);
         command.addParameter(MQIA_Q_TYPE, MQQT_LOCAL);

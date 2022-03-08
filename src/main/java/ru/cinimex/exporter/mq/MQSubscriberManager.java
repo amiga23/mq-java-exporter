@@ -146,6 +146,10 @@ public class MQSubscriberManager {
         subscriber = new PCFQueueSubscriber(config.getQmgrName());
         pcfSubscribers.put(MQType.QUEUE, subscriber);
         executor.scheduleAtFixedRate(subscriber, 0, config.getScrapeInterval(), TimeUnit.SECONDS);
+        
+        subscriber = new PCFQueueSubscriber(config.getQmgrName());
+        pcfSubscribers.put(MQType.QUEUE_STATUS, subscriber);
+        executor.scheduleAtFixedRate(subscriber, 0, config.getScrapeInterval(), TimeUnit.SECONDS);
     }
 
 }

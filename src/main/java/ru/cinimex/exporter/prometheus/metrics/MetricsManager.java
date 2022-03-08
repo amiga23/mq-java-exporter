@@ -103,7 +103,11 @@ public class MetricsManager {
      * @param labels     - metric labels
      */
     public static void updateMetric(String metricName, Double value, String... labels) {
-        metrics.get(metricName).update(value, labels);
+    	try {
+            metrics.get(metricName).update(value, labels);
+    	} catch (Exception e) {
+            logger.error("ERROR 2", e);
+    	}
     }
 
     /**

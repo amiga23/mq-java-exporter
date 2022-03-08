@@ -19,7 +19,6 @@ class MetricManagerUtilsTest {
         updatedMetricNames.add("mqobject_queue_queue_fill_percentage");
         // @TODO Add more
         updatedMetricNames.add("mqobject_queue_queue_enqueed_messages");
-        mqobject_queue_queue_enqueed_messages
     }
 
     @Test

@@ -17,8 +17,6 @@ class MetricManagerUtilsTest {
         updatedMetricNames.add("mqobject_get_average_destructive_mqget_non_persistent_message_size_bytes");
         updatedMetricNames.add("mqobject_get_average_destructive_mqget_persistent_and_non_persistent_message_size_bytes");
         updatedMetricNames.add("mqobject_queue_queue_fill_percentage");
-        // @TODO Add more
-        updatedMetricNames.add("mqobject_queue_queue_enqueed_messages");
     }
 
     @Test
